@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+// список для входных данных
 struct list1 {
 	char sign, choose;
 	int size;
@@ -20,6 +21,7 @@ struct list1 {
 	struct list1 *next;
 };
 
+// список для выходных данных
 struct list2 {
 	float *res;
 	struct list2 *res_next;
@@ -61,12 +63,12 @@ int main(int argc, char *argv[]) {
 			}
 			current = head;
 
-			while (feof(input) == 0) { // добавление узлов списка, пока не закончится файл
+			while (feof(input) == 0) { // добавление элементов списка, пока не закончится файл
 				add_el(current, input);
 				current = current->next;
 
 			}
-			head_res = malloc(sizeof(struct list2)); // память для списка для вывода
+			head_res = malloc(sizeof(struct list2)); // память для первого элемента списка для вывода
 			current = head;
 			if (current->choose == 'v') {
 				head_res->res = vect(current->sign, current->size, current->x,
@@ -77,7 +79,7 @@ int main(int argc, char *argv[]) {
 			head_res->res_next = NULL;
 			current = current->next;
 			current_res = head_res;
-			while (current != NULL) { // пока элемент не последниий
+			while (current != NULL) { // пока элемент списка не последниий
 				res_add_el(current_res, current);
 				// переустановка указателей на следующий элемент
 				current = current->next;
@@ -123,6 +125,7 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
+// функция для операций с числами
 float* numb(char sign, float *x, float *y) {
 	float f, S, *res_numb;
 	res_numb = malloc(sizeof(float));
@@ -166,6 +169,7 @@ float* numb(char sign, float *x, float *y) {
 	free(res_numb);
 }
 
+// функция для операций с векторами
 float* vect(char sign, int size, float *a, float *b) {
 	float *res_vect;
 	switch (sign) {
@@ -198,7 +202,7 @@ float* vect(char sign, int size, float *a, float *b) {
 	free(res_vect);
 }
 
-// считывание указателей
+// считывание указателей, добавление чисел
 float* add_numb(FILE *input, int size) {
 	float *numb;
 	numb = malloc(size * sizeof(float));
@@ -208,7 +212,7 @@ float* add_numb(FILE *input, int size) {
 	return numb;
 }
 
-// добавление элемента списка
+// добавление элемента списка для входных данных
 void add_el(struct list1 *current, FILE *input) {
 	struct list1 *z = malloc(sizeof(struct list1));
 	fscanf(input, " %c", &z->sign);
@@ -226,9 +230,10 @@ void add_el(struct list1 *current, FILE *input) {
 		z->y = NULL;
 	}
 	z->next = NULL; // последний элемент списка
-	current->next = z; // установка указателя
+	current->next = z; // переустановка указателя
 }
 
+// добавление элемента списка для выходных данных
 void res_add_el(struct list2 *res_current, struct list1 *current) {
 	struct list2 *z_res = malloc(sizeof(struct list1));
 	if (current->choose == 'v') {
