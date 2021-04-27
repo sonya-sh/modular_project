@@ -1,246 +1,125 @@
 /*
- * Author: Sheblova Sonya
- *
- * Version 4 (with list)
- * Input format: sign, s or v, number of coordinates for vectors, data.
- * example of input data for working with numbers: + s 2.3 -2
- * example of input data for working with vectors: - v 3 5 -2 0.1 9 105 0
- *
- * After completion, you are prompted to restart the program.
- *
- */
 
+ 5 версия(стек)
+ Использование стека для обратной польской нотации.
+ Пример ввода входных данных: 2 1 + 7 * 2 n (в конце каждого выражения прописать "n")
+ Строка с промежуточными и итоговым результатами: 3.00  10.00  20.00
+
+ */
 #include <stdio.h>
 #include <stdlib.h>
 
-// список для входных данных
-struct list1 {
-	char sign, choose;
-	int size;
-	float *x, *y;
-	struct list1 *next;
-};
+typedef struct element {
+	float data;
+	struct element *next;
+} stack;
 
-// список для выходных данных
-struct list2 {
-	float *res;
-	struct list2 *res_next;
-};
+stack *head_stack = NULL;
 
-float* numb(char sign, float *x, float *y);
-float* vect(char sign, int size, float *a, float *b);
-float* add_numb(FILE *input, int size);
-void add_el(struct list1 *current, FILE *input);
-void res_add_el(struct list2 *res_current, struct list1 *current);
+void push_element(stack **head, float data);
+float pop_element(stack **head);
+float numb(char sign, float x, float y);
 
 int main(int argc, char *argv[]) {
-	char n = 'y';
+	char n = 'y', str[20], t = '0';
 	char in[20], out[20];
+	int i = 0;
+	float num, x, y;
 	FILE *input, *output;
-	struct list1 *head, *current; //указатели на начало списка и текущий элемент
-	struct list2 *head_res, *current_res;
 	while (n == 'y') {
-		printf("\nInput file name: ");
-		scanf("%s", in);
-		printf("Output file name: ");
-		scanf("%s", out);
+		printf("Enter name of input file:");
+		scanf(" %s", in);
+		printf("Enter name of output file:");
+		scanf(" %s", out);
 		input = fopen(in, "r");
-		if (feof(input) == 0) {
-			head = malloc(sizeof(struct list1)); // память для первого элемента списка
-			fscanf(input, " %c", &head->sign);
-			fscanf(input, " %c", &head->choose);
-			if (head->choose == 'v') {
-				fscanf(input, " %i", &head->size);
-			} else {
-				head->size = 1;
-			}
-			if (head->sign != '!') {
-				head->x = add_numb(input, head->size);
-				head->y = add_numb(input, head->size);
-			} else {
-				head->x = add_numb(input, head->size);
-				head->y = NULL;
-			}
-			current = head;
+		output = fopen(out, "w");
+		while (feof(input) == 0) {
+			fscanf(input, "%c", &str[i]);
+			if (str[i] == ' ') {
+				if (t == '0') {
+					num = strtof(str, NULL); // разделяет строку на отдельные элементы
+					push_element(&head_stack, num);
+					i = 0;
 
-			while (feof(input) == 0) { // добавление элементов списка, пока не закончится файл
-				add_el(current, input);
-				current = current->next;
-
-			}
-			head_res = malloc(sizeof(struct list2)); // память для первого элемента списка для вывода
-			current = head;
-			if (current->choose == 'v') {
-				head_res->res = vect(current->sign, current->size, current->x,
-						current->y);
-			} else {
-				head_res->res = numb(current->sign, current->x, current->y);
-			}
-			head_res->res_next = NULL;
-			current = current->next;
-			current_res = head_res;
-			while (current != NULL) { // пока элемент списка не последниий
-				res_add_el(current_res, current);
-				// переустановка указателей на следующий элемент
-				current = current->next;
-				current_res = current_res->res_next;
-			}
-			current = head;
-			current_res = head_res;
-			fclose(input);
-			output = fopen(out, "w");
-			while (current != NULL) //запись ответа в output
-			{
-				if (current->choose == 'v') {
-					fprintf(output, "(");
-					for (int i = 0; i < current->size; i++) {
-						fprintf(output, " %.2f", current->x[i]);
-					}
-					fprintf(output, ") %c (", current->sign);
-					for (int i = 0; i < current->size; i++) {
-						fprintf(output, " %.2f", current->y[i]);
-					}
-					fprintf(output, " ) = ");
-					if (current->sign != '*') {
-						fprintf(output, "( ");
-						for (int i = 0; i < current->size; i++) {
-							fprintf(output, "%.2f ", current_res->res[i]);
-						}
-						fprintf(output, ")\n");
-					} else {
-						fprintf(output, "%.2f\n", current_res->res[0]);
-					}
-				} else if (current->choose == 's') {
-					fprintf(output, " %.2f %c %.2f = %.2f\n", current->x[0],
-							current->y[0], current->sign, current_res->res[0]);
 				}
-				current = current->next;
-				current_res = current_res->res_next;
+			} else if (str[i] == '*' || str[i] == '+' || str[i] == '-'
+					|| str[i] == '/' || str[i] == '^') {
+				y = pop_element(&head_stack);
+				x = pop_element(&head_stack);
+				push_element(&head_stack, numb(str[i], x, y));
+				fprintf(output, "%.2f  ", numb(str[i], x, y));
+				t = '1';
+			} else if (str[i] == 'n') {
+				while (head_stack != NULL)
+					pop_element(&head_stack);
+				fprintf(output, "\n");
+			} else {
+				t = '0';
+				i = i + 1;
 			}
-			fclose(output);
 		}
-		printf("do you want to continue? (y/n)");
-		scanf("%s", &n);
+
+		fclose(input);
+		fclose(output);
+		printf("Do you want to continue? (y/n)");
+		scanf(" %c", &n);
 	}
 	return 0;
 }
 
-// функция для операций с числами
-float* numb(char sign, float *x, float *y) {
-	float f, S, *res_numb;
-	res_numb = malloc(sizeof(float));
+float numb(char sign, float x, float y) {
+	float res, f, S;
 	switch (sign) {
 	case '+':
-		res_numb[0] = x[0] + y[0];
-		return res_numb;
+		res = x + y;
+		return res;
+		break;
 	case '-':
-		res_numb[0] = x[0] - y[0];
-		return res_numb;
+		res = x - y;
+		return res;
+		break;
 	case '*':
-		res_numb[0] = x[0] * y[0];
-		return res_numb;
+		res = x * y;
+		return res;
+		break;
 	case '/':
-		if (y != 0) {
-			res_numb[0] = x[0] / y[0];
-			return res_numb;
-		} else {
-			return 0;
-		}
+		if (y != 0)
+			res = x / y;
+		return res;
+		break;
 	case '!':
 		f = 1;
-		for (int i = 1; i <= x[0]; i++) {
+		for (int i = 1; i <= x; i++) {
 			f *= i;
 		}
-		res_numb[0] = f;
-		return res_numb;
+		res = f;
+		return res;
 	case '^':
 		f = 1;
 		S = 1;
-		for (int i = 1; i <= y[0]; i++) {
-			S *= x[0];
+		for (int i = 1; i <= y; i++) {
+			S *= x;
 		}
-		res_numb[0] = S;
-		return res_numb;
+		res = S;
+		return res;
 	}
 	return x;
 	return y;
-	free(x);
-	free(y);
-	free(res_numb);
 }
 
-// функция для операций с векторами
-float* vect(char sign, int size, float *a, float *b) {
-	float *res_vect;
-	switch (sign) {
-	case '+':
-		res_vect = malloc(size * sizeof(float));
-		for (int i = 0; i < size; i++) {
-			res_vect[i] = a[i] + b[i];
-		}
-		return res_vect;
-
-	case '-':
-		res_vect = malloc(size * sizeof(float));
-		for (int i = 0; i < size; i++) {
-			res_vect[i] = a[i] - b[i];
-		}
-		return res_vect;
-
-	case '*':
-		res_vect = malloc(sizeof(float));
-		res_vect[0] = 0;
-		for (int i = 0; i < size; i++) {
-			res_vect[0] += a[i] * b[i];
-		}
-		return res_vect;
-	}
-	return a;
-	return b;
-	free(a);
-	free(b);
-	free(res_vect);
+void push_element(stack **head, float data) {
+	stack *tmp = malloc(sizeof(stack));
+	tmp->next = *head;
+	tmp->data = data;
+	*head = tmp;
 }
 
-// считывание указателей, добавление чисел
-float* add_numb(FILE *input, int size) {
-	float *numb;
-	numb = malloc(size * sizeof(float));
-	for (int i = 0; i < size; i++) {
-		fscanf(input, "%f", &numb[i]);
-	}
-	return numb;
+float pop_element(stack **head) {
+	stack *tmp;
+	float data;
+	tmp = *head;
+	*head = (*head)->next;
+	data = tmp->data;
+	return data;
 }
 
-// добавление элемента списка для входных данных
-void add_el(struct list1 *current, FILE *input) {
-	struct list1 *z = malloc(sizeof(struct list1));
-	fscanf(input, " %c", &z->sign);
-	fscanf(input, " %c", &z->choose);
-	if (z->choose == 'v') {
-		fscanf(input, " %i", &z->size);
-	} else {
-		z->size = 1;
-	}
-	if (z->sign != '!') {
-		z->x = add_numb(input, z->size);
-		z->y = add_numb(input, z->size);
-	} else {
-		z->x = add_numb(input, z->size);
-		z->y = NULL;
-	}
-	z->next = NULL; // последний элемент списка
-	current->next = z; // переустановка указателя
-}
-
-// добавление элемента списка для выходных данных
-void res_add_el(struct list2 *res_current, struct list1 *current) {
-	struct list2 *z_res = malloc(sizeof(struct list1));
-	if (current->choose == 'v') {
-		z_res->res = vect(current->sign, current->size, current->x, current->y);
-	} else {
-		z_res->res = numb(current->sign, current->x, current->y);
-	}
-	z_res->res_next = NULL;
-	res_current->res_next = z_res;
-}
