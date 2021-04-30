@@ -2,8 +2,8 @@
 
  5 версия(стек)
  Использование стека для обратной польской нотации.
- Пример ввода входных данных: 2 1 + 7 * 2 n (в конце каждого выражения прописать "n")
- Строка с промежуточными и итоговым результатами: 3.00  10.00  20.00
+ Пример ввода входных данных: 2 1 + 7 * 2 - n (в конце каждого выражения прописать "n")
+ Строка с промежуточными и итоговым результатами: 3.00  21.00  19.00
 
  */
 #include <stdio.h>
@@ -108,18 +108,18 @@ float numb(char sign, float x, float y) {
 }
 
 void push_element(stack **head, float data) {
-	stack *tmp = malloc(sizeof(stack));
-	tmp->next = *head;
-	tmp->data = data;
-	*head = tmp;
+	stack *z = malloc(sizeof(stack));
+	z->next = *head;
+	z->data = data;
+	*head = z;
 }
 
 float pop_element(stack **head) {
-	stack *tmp;
+	stack *z;
 	float data;
-	tmp = *head;
+	z = *head;
 	*head = (*head)->next;
-	data = tmp->data;
+	data = z->data;
 	return data;
 }
 
