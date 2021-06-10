@@ -3,7 +3,7 @@
  * Пример выходных данных:
  * + c 5 6
  * - v 3 9 8 7 1 2 3
- * Поддерживается работа только с положительными числами типа int :(
+ *
  */
 
 #include <stdio.h>
@@ -33,8 +33,9 @@ void enqueue(queue_t *queue, char *value);
 char* dequeue(queue_t *queue);
 int is_empty(queue_t queue);
 char* read_string(FILE *f1);
-int is_digit(char c);
+int is_digit(float c);
 int read_int(char *s, int *i);
+double read_double(char *s, int *i);
 double factorial(int f);
 
 void numbers(FILE *output, char *s, char sign);
@@ -120,7 +121,7 @@ char* read_string(FILE *input) {
 }
 
 // проверка на цифру
-int is_digit(char c) {
+int is_digit(float c) {
 	return (c >= '0' && c <= '9');
 }
 
@@ -137,6 +138,22 @@ int read_int(char *s, int *i) {
 	return value;
 }
 
+double read_double(char *s, int *i) {
+	while (s[*i] == ' ')
+		(*i)++;
+
+	int start = *i;
+
+	while (s[*i] && (is_digit(s[*i]) || s[*i] == '.'))
+		(*i)++;
+
+	char prev = s[*i];
+	s[*i] = '\0';
+	double value = atof(s + start); // переводим строку в число
+	s[*i] = prev;
+
+	return value;
+}
 
 double factorial(int f) {
 	double fact = 1;
@@ -149,33 +166,34 @@ double factorial(int f) {
 
 void numbers(FILE *output, char *s, char sign) {
 	int index = 3;
-	int x = read_int(s, &index);
 
 	if (sign == '!') {
+		int x = read_int(s, &index);
 		fprintf(output, "%.0lf\n", factorial(x));
 		return;
 	}
 
-	int y = read_int(s, &index);
+	double x = read_double(s, &index);
+	double y = read_double(s, &index);
 
 	if (sign == '+') {
-		fprintf(output, "%d\n", x + y);
+		fprintf(output, "%.2lf\n", x + y);
 	} else if (sign == '-') {
-		fprintf(output, "%d\n", x - y);
+		fprintf(output, "%.2lf\n", x - y);
 	} else if (sign == '*') {
-		fprintf(output, "%d\n", x * y);
+		fprintf(output, "%.2lf\n", x * y);
 	} else if (sign == '/') {
 		if (y == 0)
 			fprintf(output, "division by zero\n");
 		else
-			fprintf(output, "%lf\n", (double) x / y);
+			fprintf(output, "%.2lf\n", (double) x / y);
 	} else if (sign == '^') {
 
-		int S = 1;
+		float S = 1;
 		for (int i = 1; i <= y; i++) {
 			S *= x;
 		}
-		fprintf(output, "%d\n", S);
+		fprintf(output, "%.2lf\n", S);
 	}
 
 	else {
@@ -187,31 +205,31 @@ void vectors(FILE *output, char *s, char sign) {
 	int index = 3;
 	int n = read_int(s, &index); // размерность вектора
 
-	int *v1 = (int*) malloc(n * sizeof(int));
-	int *v2 = (int*) malloc(n * sizeof(int));
+	double *v1 = (double*) malloc(n * sizeof(double));
+	double *v2 = (double*) malloc(n * sizeof(double));
 
 	// считываем вектора
 	for (int i = 0; i < n; i++)
-		v1[i] = read_int(s, &index);
+		v1[i] = read_double(s, &index);
 
 	for (int i = 0; i < n; i++)
-		v2[i] = read_int(s, &index);
+		v2[i] = read_double(s, &index);
 
 	if (sign == '*') {
-		int res = 0;
+		double res = 0;
 
 		for (int i = 0; i < n; i++)
 			res += v1[i] * v2[i];
 
-		fprintf(output, "%d\n", res);
+		fprintf(output, "%.2lf\n", res);
 	} else if (sign == '+' || sign == '-') {
 		if (sign == '+') {
 			for (int i = 0; i < n; i++)
-				fprintf(output, "%d ", v1[i] + v2[i]);
+				fprintf(output, "%.2lf ", v1[i] + v2[i]);
 			fprintf(output, "\n");
 		} else {
 			for (int i = 0; i < n; i++)
-				fprintf(output, "%d ", v1[i] - v2[i]);
+				fprintf(output, "%.2lf ", v1[i] - v2[i]);
 			fprintf(output, "\n");
 		}
 
