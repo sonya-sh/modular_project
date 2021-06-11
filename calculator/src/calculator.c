@@ -112,7 +112,10 @@ char* read_string(FILE *input) {
 	char *s = (char*) malloc(len * sizeof(char));
 	for (char c = fgetc(input); !feof(input) && c != '\n'; c = fgetc(input)) {
 		s[size++] = c;
-
+		if (size >= len) { // если ёмкости недостаточно
+			len *= 2; // увеличиваем её в 2 раза
+			s = (char*) realloc(s, len * sizeof(char)); // и перераспределяем память
+		}
 	}
 
 	s[size] = '\0';
