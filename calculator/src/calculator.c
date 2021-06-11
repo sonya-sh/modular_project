@@ -252,4 +252,3 @@ void calc(FILE *input, char *s) {
 		vectors(input, s, sign);
 	}
 }
-
